@@ -66,6 +66,7 @@ class UI:
         self.root.geometry("750x1050")  # card_size_width,
         #     card_size_depth)
         # )
+        self.root.overrideredirect(True)
 
     def capture_screen_shot(self):
         # cap = tkcap.CAP(self.root)
@@ -79,20 +80,35 @@ class UI:
                              )
         img.save('test.png')
 
-        # pyautogui.screenshot('test.png', ) # , region=self.get_region())
 
     def create_main_window(self):
 
         # todo - main card loop here
-        this_card_details = ["?",
-                     5,
-                     "Main Mechanics",
-                     "What are the most important score mechanics?",
-                     "CC BY-NC-ND 2.0",
-                     "https://live.staticflickr.com/1343/1098261686_f7aab03543_k_d.jpg",
-                     "Daniel Gasienica"
-                     ]
+        # this_card_details = ["?",
+        #              5,
+        #              "Main Mechanics",
+        #              "What are the most important score mechanics?",
+        #              "CC BY-NC-ND 2.0",
+        #              "https://live.staticflickr.com/1343/1098261686_f7aab03543_k_d.jpg",
+        #              "Daniel Gasienica"
+        #              ]
 
+        this_card_details = ["+",
+                             5,
+                             "Codes",
+                             "What do you want the musicians to do? What notation supports this?",
+                             "CC BY-SA 2.0",
+                             "https://live.staticflickr.com/139/327122302_c1414d8133_k_d.jpg",
+                             "Alexander Henning Drach"]
+
+        # this_card_details = ["-",
+        #                      1,
+        #                      "Poetics",
+        #                      "Can you describe the poetic imagery of the score?",
+        #                      "CC BY 2.0",
+        #                      "https://live.staticflickr.com/7240/26263282734_a12f6a00cd_k_d.jpg",
+        #                      "Derek Ewkpatnc Finch"
+        #                      ]
 
         # general card params
         card_params_for_type = type_dict.get(this_card_details[0])
@@ -156,7 +172,7 @@ class UI:
         # add main title
         card_title = tk.Label(text_canvas,
                                  text=card_title,
-                                 font=('Arial 60 bold'),
+                                 font=('Helvetica 60 bold'),
                                  justify="right",
                                  bg=card_bg_for_expl,
                                  foreground=card_col_for_text
@@ -166,18 +182,18 @@ class UI:
         # add main text
         main_text = tk.Label(text_canvas,
                              text=card_text,
-                             font=('Arial 48'),
+                             font=('Helvetica 52'),
                              justify="left",
                              bg=card_bg_for_expl,
                              foreground=card_col_for_text,
-                             wraplength=image_size[1]
-                                 )
+                             wraplength=image_size[0]
+                             )
         main_text.place(x=20, y=100)
 
         # bottom card type
         bottom_card_type = tk.Label(text_canvas,
                                      text=f">>>  {bottom_id_text}",
-                                     font=('Arial 35 bold'),
+                                     font=('Helvetica 35 bold'),
                                      anchor="e",
                                      bg=card_bg_for_expl,
                                      foreground=card_col_for_text
