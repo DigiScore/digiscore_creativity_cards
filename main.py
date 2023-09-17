@@ -57,11 +57,7 @@ class Card:
     def __init__(self):
         # set up canvas for card
         self.root = tk.Tk()
-        # card_main_root.title('Replace')
-
-        self.root.geometry("750x1050")  # card_size_width,
-        #     card_size_depth)
-        # )
+        self.root.geometry("750x1050")
         self.root.overrideredirect(True)
 
     def capture_screen_shot(self):
@@ -90,6 +86,7 @@ class Card:
         full_card_df = self.get_excel_data()
 
         for this_card_details in full_card_df.itertuples():
+            # print(this_card_details)
 
             # general card params
             card_params_for_type = type_dict.get(this_card_details[1])
@@ -110,20 +107,31 @@ class Card:
             images_cr = this_card_details[5]
 
             # get image
+            url = this_card_details[6]
+
+            if pd.isna(url):
+                url = mode_list[this_card_details[2] - 1][2]
             try:
-                url = this_card_details[6]
+                img = WebImage(url).get()
             except:
                 url = mode_list[this_card_details[2] - 1][2]
-
-            img = WebImage(url).get()
+                img = WebImage(url).get()
 
             # make background
             self.root.configure(background=main_bg_colour)
 
             # make canvas for image and triangle
-            image_canvas = tk.Canvas(self.root, width=image_size[0], height=image_size[1], bg=main_bg_colour, highlightthickness=0)
+            image_canvas = tk.Canvas(self.root,
+                                     width=image_size[0],
+                                     height=image_size[1],
+                                     bg=main_bg_colour,
+                                     highlightthickness=0
+                                     )
             image_canvas.place(x=75, y=75)
-            image_canvas.create_image(0, 0, anchor="nw", image=img) #, border=0)
+            image_canvas.create_image(0, 0,
+                                      anchor="nw",
+                                      image=img
+                                      )
 
             # add masking triangle
             tri_points = [-1, -1, 100, -1, -1, 100]
@@ -145,33 +153,38 @@ class Card:
                                          bg=main_bg_colour,
                                          foreground="white"
                                          )
-            top_id_frame_text.place(x=20, y=5)
+            top_id_frame_text.place(x=25, y=5)
 
             # new canvas for text
-            text_canvas = tk.Canvas(self.root, width=image_size[0], height=image_size[1] + 50, bg=card_bg_for_expl, highlightthickness=0)
+            text_canvas = tk.Canvas(self.root,
+                                    width=image_size[0],
+                                    height=image_size[1] + 50,
+                                    bg=card_bg_for_expl,
+                                    highlightthickness=0
+                                    )
             text_canvas.place(x=75, y=75+image_size[1])
 
             # add main title
             card_title = tk.Label(text_canvas,
-                                     text=self.card_title,
-                                     font=('Helvetica 50 bold'),
-                                     justify="right",
-                                     bg=card_bg_for_expl,
-                                     foreground=card_col_for_text,
-                                 wraplength=image_size[0] - 20
-                                     )
+                                  text=self.card_title,
+                                  font=('Helvetica 50 bold'),
+                                  justify="right",
+                                  bg=card_bg_for_expl,
+                                  foreground=card_col_for_text,
+                                  wraplength=image_size[0] - 20
+                                  )
             card_title.place(x=20, y=10)
 
             # add main text
             main_text = tk.Label(text_canvas,
                                  text=card_text,
-                                 font=('Helvetica 40'),
+                                 font=('Helvetica 50'),
                                  justify="left",
                                  bg=card_bg_for_expl,
                                  foreground=card_col_for_text,
                                  wraplength=image_size[0] - 20
                                  )
-            main_text.place(x=20, y=100)
+            main_text.place(x=20, y=120)
 
             # bottom card type
             bottom_card_type = tk.Label(text_canvas,
@@ -183,11 +196,50 @@ class Card:
                                          )
             bottom_card_type.place(x=20, y=380)
 
-            self.root.after(100, self.capture_screen_shot)
+            self.root.after(50, self.capture_screen_shot)
 
             self.root.update()
 
+    def close_window(self):
+        self.root.destroy()
+
+    def make_backs(self):
+        symbols = ["+", "-", "?"]
+        self.root.configure(background="gray70")
+
+        # add DigiScore text
+        ds_name = tk.Label(self.root,
+                           text="The Digital Score",
+                           font=('Helvetica 60 bold'),
+                           bg="gray70",
+                           foreground="white"
+                           )
+        ds_name.place(x=20, y=20)
+
+        ds_url = tk.Label(self.root,
+                           text="https://digiscore.github.io/",
+                           font=('Helvetica 60 bold'),
+                           bg="gray70",
+                           foreground="white"
+                           )
+        ds_url.place(x=20, y=1000)
+
+        for sym in symbols:
+            card_sym = tk.Label(self.root,
+                           text=sym,
+                           font=('Helvetica 200 bold'),
+                           bg="gray70",
+                           foreground="white"
+                           )
+        ds_url.place(x=100, y=500)
+
+        # self.root.after(50, self.capture_screen_shot)
+        self.root.mainloop()
+
 
 if __name__ == "__main__":
-    build = Card()
-    build.create_full_deck()
+    # build = Card()
+    # build.create_full_deck()
+    # build.close_window()
+    backs = Card()
+    backs.make_backs()
