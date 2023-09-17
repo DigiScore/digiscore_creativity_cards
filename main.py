@@ -1,9 +1,11 @@
-import tkcap
 import tkinter as tk
 from tkinter import ttk
 import urllib.request
 import io
 from PIL import ImageTk, Image, ImageGrab
+
+import tkcap
+
 
 # Master params
 # master_page_size = (1000, 1500)  # A4 portrait
@@ -57,24 +59,29 @@ class WebImage:
 
 class UI:
     def __init__(self):
-
-
-    def capture_screen_shot(self):
-        cap = tkcap.CAP(self.root)
-
-
-
-
-    def create_main_window(self):
         # set up canvas for card
         self.root = tk.Tk()
         # card_main_root.title('Replace')
 
-        self.root.geometry("750x1050") #card_size_width,
-                            #     card_size_depth)
-                            # )
+        self.root.geometry("750x1050")  # card_size_width,
+        #     card_size_depth)
+        # )
 
+    def capture_screen_shot(self):
+        # cap = tkcap.CAP(self.root)
+        # cap.capture('test.png', overwrite=True)
 
+        print(self.root.geometry())
+        self.root.update()
+        img = ImageGrab.grab(bbox=(46, 55, (750+46), (997+55)),
+                             include_layered_windows=False,
+                             all_screens=True
+                             )
+        img.save('test.png')
+
+        # pyautogui.screenshot('test.png', ) # , region=self.get_region())
+
+    def create_main_window(self):
 
         # todo - main card loop here
         this_card_details = ["?",
@@ -114,17 +121,6 @@ class UI:
 
         # make background
         self.root.configure(background=main_bg_colour)
-
-        # add header and footer
-        # digiscore_header = tk.Label(root,
-        #                             text="The Digital Score",
-        #                             font=('Helvetica 40 bold'),
-        #                             anchor="w",
-        #                             bg=main_bg_colour,
-        #                             foreground="white"
-        #                             )
-        #
-        # digiscore_header.place(x=20, y=20)
 
         # make canvas for image and triangle
         image_canvas = tk.Canvas(self.root, width=image_size[0], height=image_size[1], bg=main_bg_colour, highlightthickness=0)
@@ -193,7 +189,7 @@ class UI:
         # todo - delete assets?
         # LOOP END
 
-        self.root.after(0, self.capture_screen_shot)
+        self.root.after(100, self.capture_screen_shot)
 
         self.root.mainloop()
 
