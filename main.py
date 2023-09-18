@@ -262,9 +262,7 @@ class Card:
 class PDF:
     def __init__(self):
         # set up canvas for card
-        self.root = tk.Tk()
-        self.root.geometry(master_page_size)
-        self.root.overrideredirect(True)
+        pass
 
     def process_list_of_cards(self, full_card_list):
         return [full_card_list[i:i + 8] for i in range(0, len(full_card_list), 8)]
@@ -282,37 +280,31 @@ class PDF:
 
             # break that list into chunks of 8
             list_of_card_list = self.process_list_of_cards(path)
-
-            list_of_image_objects = []
-            list_of_empty_canvas = []
+            #
+            # list_of_image_objects = []
+            # list_of_empty_canvas = []
 
             # go through each chunk of 8 and build a PDF sheet
             for sheet, card_list in enumerate(list_of_card_list):
-                # make a list of Image objects
+                # set pdf grid vars
+                c = 0  # column
+                r = 0  # row
+                print(sheet, card_list)
+                # make master A4 sheet
+                self.root = Image.new('RGB',
+                                      (master_page_width, master_page_height)
+                                      )
+
+                # resize each image and place on A4 sheet
                 for card in card_list:
-                    try:
-                        img = Image.open(card)
-                    except:
-                        continue
+                    print(card)
+                    img = Image.open(card)
                     resized_img = img.resize(pdf_image_size)
-                    img_object = ImageTk.PhotoImage(resized_img)
-                    list_of_image_objects.append(img_object)
 
-                    # make a list of Labels
-                    blank_canvas = tk.Canvas(self.root,
-                                          width=pdf_card_size_w,
-                                          height=pdf_card_size_h,
-                                          highlightthickness=0,
-                                          )
-                    list_of_empty_canvas.append(blank_canvas)
-
-                # place zipped lists onto root
-                for i, img in enumerate(list_of_image_objects):
-                    list_of_empty_canvas[i].place(x=c * pdf_card_size_w,
-                                                  y=r * pdf_card_size_h)
-                    list_of_empty_canvas[i].create_image(0, 0,
-                                                         anchor="nw",
-                                                         image=img)
+                    self.root.paste(resized_img,
+                                    (c * pdf_card_size_w,
+                                     r * pdf_card_size_h)
+                                    )
 
                     c += 1
                     if c >= master_page_columns:
@@ -322,26 +314,19 @@ class PDF:
                     if r >= master_page_rows:
                         break
 
-                sleep(5)
-                # take screenshot
-                grab = ImageGrab.grab(bbox=(40, 50, master_page_width, master_page_height),
-                                    include_layered_windows=False,
-                                    all_screens=True
-                                    )
-                # safe_name = self.card_title.replace(" ", "_")
-                # safe_name = safe_name.replace("/", "-")
-                grab.save(f"cards/PDFs/DigiScore_{sym}_sheet_{sheet}.pdf")
+                print(f"printing ----- cards/PDFs/DigiScore_{sym}_sheet_{sheet}.pdf")
+                self.root.save(f"cards/PDFs/DigiScore_{sym}_sheet_{sheet}.pdf")
 
-        self.root.mainloop()
+        # self.root.mainloop()
 
 
 if __name__ == "__main__":
-    build = Card()
-    build.create_full_deck()
+    # build = Card()
+    # build.create_full_deck()
     # build.close_window()
     #
-    # build_pdf = PDF()
-    # build_pdf.pdf_build()
+    build_pdf = PDF()
+    build_pdf.pdf_build()
 
     # backs = Card()
     # backs.make_backs()
