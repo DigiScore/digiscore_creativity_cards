@@ -3,16 +3,29 @@ import pandas as pd
 import urllib.request
 import io
 from PIL import ImageTk, Image, ImageGrab
+from time import sleep
+from glob import glob
 
 
-# Master params
-# master_page_size = (1000, 1500)  # A4 portrait
-# master_page_rows = 2
-# master_page_columns = 4
+# Master A4 params
+master_page_width = 1580 # 3500
+master_page_height = 950  # 2480
+master_page_size = f"{master_page_width}x{master_page_height}"  # A4 LANDSCAPE in pixels
+master_page_columns = 4
+master_page_rows = 2
 
+# master card params
 card_size_width = 750
 card_size_depth = 1050
+border = 25
+image_size = (600, 400)
+symbols = ["+", "-", "?"]
+pdf_card_size_w = int(master_page_width / master_page_columns)
+pdf_card_size_h = int(master_page_height / master_page_rows)
+pdf_image_size = (pdf_card_size_w, pdf_card_size_h)
+print(pdf_card_size_w, pdf_card_size_h)
 
+# card data params
 mode_list = [("Interface", "palegreen", "https://live.staticflickr.com/5533/9232097827_6b77e7d106_k_d.jpg"),
                  ("Design", "sienna1", "https://live.staticflickr.com/4044/4424964267_14c5a6f900_k_d.jpg"),
                  ("Goal", "silver", "https://live.staticflickr.com/4132/5048307585_51df161d35_k_d.jpg"),
@@ -38,8 +51,6 @@ type_dict = {"+": {"name": "Opportunity",
 
 excel_file = "DS_Game_Cards_Image_Record.csv"
 
-border = 25
-image_size = (600, 400)
 
 class WebImage:
     def __init__(self, url):
@@ -61,11 +72,14 @@ class Card:
         self.root.overrideredirect(True)
 
     def capture_screen_shot(self):
+        # capture screenshot of card
         img = ImageGrab.grab(bbox=(46, 55, (750+46), (997+55)),
                              include_layered_windows=False,
                              all_screens=True
                              )
-        img.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{self.card_title}.png")
+        safe_name = self.card_title.replace(" ", "_")
+        safe_name = safe_name.replace("/", "-")
+        img.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
 
     def get_excel_data(self):
         full_card_df = pd.read_csv(filepath_or_buffer=excel_file,
@@ -142,7 +156,7 @@ class Card:
                                      font=('Helvetica 15'),
                                      anchor="w",
                                      text=f"{image_credit} ({images_cr})",
-                                     fill="white"
+                                     fill=main_bg_colour
                                      )
 
             # add symbol and type
@@ -153,7 +167,7 @@ class Card:
                                          bg=main_bg_colour,
                                          foreground="white"
                                          )
-            top_id_frame_text.place(x=25, y=5)
+            top_id_frame_text.place(x=20, y=5)
 
             # new canvas for text
             text_canvas = tk.Canvas(self.root,
@@ -204,36 +218,128 @@ class Card:
         self.root.destroy()
 
     def make_backs(self):
-        symbols = ["+", "-", "?"]
-        self.root.configure(background="gray70")
+        self.root.configure(background="white")
 
         # add DigiScore text
         ds_name = tk.Label(self.root,
                            text="The Digital Score",
-                           font=('Helvetica 60 bold'),
-                           bg="gray70",
-                           foreground="white"
+                           font=('Helvetica 50 bold'),
+                           bg="white",
+                           foreground="gray70"
                            )
-        ds_name.place(x=20, y=20)
+        ds_name.place(x=160, y=20)
+
+        cards_name = tk.Label(self.root,
+                           text="Creativity Cards",
+                           font=('Helvetica 50 bold'),
+                           bg="white",
+                           foreground="gray70"
+                           )
+        cards_name.place(x=170, y=80)
 
         ds_url = tk.Label(self.root,
                            text="https://digiscore.github.io/",
-                           font=('Helvetica 60 bold'),
-                           bg="gray70",
-                           foreground="white"
+                           font=('Helvetica 50 bold'),
+                           bg="white",
+                           foreground="gray70"
                            )
-        ds_url.place(x=20, y=1000)
+        ds_url.place(x=70, y=750)
 
         for sym in symbols:
             card_sym = tk.Label(self.root,
                            text=sym,
-                           font=('Helvetica 200 bold'),
-                           bg="gray70",
-                           foreground="white"
+                           font=('Helvetica 400 bold'),
+                           bg="white",
+                           foreground="gray70"
                            )
-        ds_url.place(x=100, y=500)
+            card_sym.place(x=260, y=230)
+
+            img = ImageGrab.grab(bbox=(46, 55, (750 + 46), (997 + 55)),
+                                 include_layered_windows=False,
+                                 all_screens=True
+                                 )
+            img.save(f"cards/backs/DigiScore_{sym}_back_image.png")
+
+            sleep(0.05)
+            self.close_window()
+
 
         # self.root.after(50, self.capture_screen_shot)
+        self.root.mainloop()
+
+class PDF:
+    def __init__(self):
+        # set up canvas for card
+        self.root = tk.Tk()
+        self.root.geometry(master_page_size)
+        self.root.overrideredirect(True)
+
+    def process_list_of_cards(self, full_card_list):
+        return [full_card_list[i:i + 8] for i in range(0, len(full_card_list), 8)]
+
+    def pdf_build(self):
+        # set pdf grid vars
+        c = 0  # column
+        r = 0  # row
+
+        # iterate through each symbol
+
+        for sym in symbols:
+            # get the full list of paths for cards in this folder
+            path = glob(f"cards/{sym}/*")
+
+            # break that list into chunks of 8
+            list_of_card_list = self.process_list_of_cards(path)
+
+            list_of_image_objects = []
+            list_of_empty_canvas = []
+
+            # go through each chunk of 8 and build a PDF sheet
+            for sheet, card_list in enumerate(list_of_card_list):
+                # make a list of Image objects
+                for card in card_list:
+                    try:
+                        img = Image.open(card)
+                    except:
+                        continue
+                    resized_img = img.resize(pdf_image_size)
+                    img_object = ImageTk.PhotoImage(resized_img)
+                    list_of_image_objects.append(img_object)
+
+                    # make a list of Labels
+                    blank_canvas = tk.Canvas(self.root,
+                                          width=pdf_card_size_w,
+                                          height=pdf_card_size_h,
+                                          highlightthickness=0,
+                                          )
+                    list_of_empty_canvas.append(blank_canvas)
+
+                # place zipped lists onto root
+                for i, img in enumerate(list_of_image_objects):
+                    list_of_empty_canvas[i].place(x=c * pdf_card_size_w,
+                                                  y=r * pdf_card_size_h)
+                    list_of_empty_canvas[i].create_image(0, 0,
+                                                         anchor="nw",
+                                                         image=img)
+
+                    c += 1
+                    if c >= master_page_columns:
+                        r += 1
+                        c = 0
+
+                    if r >= master_page_rows:
+                        break
+
+                sleep(5)
+                # take screenshot
+                grab = ImageGrab.grab(bbox=(40, 50, master_page_width, master_page_height),
+                                    include_layered_windows=False,
+                                    all_screens=True
+                                    )
+                # safe_name = self.card_title.replace(" ", "_")
+                # safe_name = safe_name.replace("/", "-")
+                grab.save(f"cards/PDFs/DigiScore_{sym}_sheet_{sheet}.pdf")
+
         self.root.mainloop()
 
 
@@ -241,5 +347,9 @@ if __name__ == "__main__":
     # build = Card()
     # build.create_full_deck()
     # build.close_window()
-    backs = Card()
-    backs.make_backs()
+
+    build_pdf = PDF()
+    build_pdf.pdf_build()
+
+    # backs = Card()
+    # backs.make_backs()
