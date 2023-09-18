@@ -1,10 +1,11 @@
-import tkinter as tk
+# import tkinter as tk
 import pandas as pd
 import urllib.request
 import io
-from PIL import ImageTk, Image, ImageGrab
+from PIL import ImageTk, Image, ImageGrab, ImageDraw, ImageFont
 from time import sleep
 from glob import glob
+import textwrap
 
 
 # Master A4 params
@@ -25,27 +26,28 @@ pdf_card_size_h = int(master_page_height / master_page_rows)
 pdf_image_size = (pdf_card_size_w, pdf_card_size_h)
 print(pdf_card_size_w, pdf_card_size_h)
 
+
 # card data params
-mode_list = [("Interface", "palegreen", "https://live.staticflickr.com/5533/9232097827_6b77e7d106_k_d.jpg"),
-                 ("Design", "sienna1", "https://live.staticflickr.com/4044/4424964267_14c5a6f900_k_d.jpg"),
-                 ("Goal", "silver", "https://live.staticflickr.com/4132/5048307585_51df161d35_k_d.jpg"),
-                 ("Content", "gold1", "https://live.staticflickr.com/1946/43729984740_7159cfa87c_k_d.jpg"),
-                 ("Language", "mediumorchid", "https://live.staticflickr.com/5052/5481137306_e138dca767_k_d.jpg"),
-                 ("Feedback", "red1", "https://live.staticflickr.com/3049/3101950593_16e0528bd0_k_d.jpg"),
-                 ("Flow", "royalblue1", "https://live.staticflickr.com/5052/5481137306_e138dca767_k_d.jpg")
+mode_list = [("Interface", (152,251,152), "https://live.staticflickr.com/5533/9232097827_6b77e7d106_k_d.jpg"),
+             ("Design", (255,130,71), "https://live.staticflickr.com/4044/4424964267_14c5a6f900_k_d.jpg"),
+             ("Goal", (192,192,192), "https://live.staticflickr.com/4132/5048307585_51df161d35_k_d.jpg"),
+                 ("Content", (255,215,0), "https://live.staticflickr.com/1946/43729984740_7159cfa87c_k_d.jpg"),
+                 ("Language", (186,85,211), "https://live.staticflickr.com/5052/5481137306_e138dca767_k_d.jpg"),
+                 ("Feedback", (255,0,0), "https://live.staticflickr.com/3049/3101950593_16e0528bd0_k_d.jpg"),
+                 ("Flow", (72,118,255), "https://live.staticflickr.com/5052/5481137306_e138dca767_k_d.jpg")
                       ]
 
 type_dict = {"+": {"name": "Opportunity",
-                   "bg_for_expl": "white",
-                   "text_col_for_explain": "black"
+                   "bg_for_expl": (255,255,255),
+                   "text_col_for_explain": (0,0,0)
                    },
              "-": {"name": "Challenge",
                    "bg_for_expl": "black",
-                   "text_col_for_explain": "white"
+                   "text_col_for_explain": (255,255,255)
                    },
              "?": {"name": "Question",
-                   "bg_for_expl": "gray70",
-                   "text_col_for_explain": "black"
+                   "bg_for_expl": (179,179,179),
+                   "text_col_for_explain": (0,0,0)
                    }
              }
 
@@ -57,19 +59,18 @@ class WebImage:
         with urllib.request.urlopen(url) as u:
             raw_data = u.read()
         image = Image.open(io.BytesIO(raw_data))
-        img = image.resize(image_size)
-        self.image = ImageTk.PhotoImage(img)
+        self.img = image.resize(image_size)
+        # self.image = ImageTk.PhotoImage(img)
 
     def get(self):
-        return self.image
+        return self.img
 
 
 class Card:
     def __init__(self):
         # set up canvas for card
-        self.root = tk.Tk()
-        self.root.geometry("750x1050")
-        self.root.overrideredirect(True)
+        # self.root = Image.new('RGB', (pdf_card_size_w, pdf_card_size_h))
+        pass
 
     def capture_screen_shot(self):
         # capture screenshot of card
@@ -131,88 +132,79 @@ class Card:
                 url = mode_list[this_card_details[2] - 1][2]
                 img = WebImage(url).get()
 
-            # make background
-            self.root.configure(background=main_bg_colour)
-
-            # make canvas for image and triangle
-            image_canvas = tk.Canvas(self.root,
-                                     width=image_size[0],
-                                     height=image_size[1],
-                                     bg=main_bg_colour,
-                                     highlightthickness=0
-                                     )
-            image_canvas.place(x=75, y=75)
-            image_canvas.create_image(0, 0,
-                                      anchor="nw",
-                                      image=img
-                                      )
-
-            # add masking triangle
-            tri_points = [-1, -1, 100, -1, -1, 100]
-            image_canvas.create_polygon(tri_points, fill=main_bg_colour)
-
-            # add credits
-            image_canvas.create_text(20, image_size[1] - 20,
-                                     font=('Helvetica 15'),
-                                     anchor="w",
-                                     text=f"{image_credit} ({images_cr})",
-                                     fill=main_bg_colour
-                                     )
-
-            # add symbol and type
-            top_id_frame_text = tk.Label(self.root,
-                                         text=self.type_symbol,
-                                         font=('Helvetica 120 bold'),
-                                         # justify="left",
-                                         bg=main_bg_colour,
-                                         foreground="white"
-                                         )
-            top_id_frame_text.place(x=20, y=5)
-
-            # new canvas for text
-            text_canvas = tk.Canvas(self.root,
-                                    width=image_size[0],
-                                    height=image_size[1] + 50,
-                                    bg=card_bg_for_expl,
-                                    highlightthickness=0
-                                    )
-            text_canvas.place(x=75, y=75+image_size[1])
-
-            # add main title
-            card_title = tk.Label(text_canvas,
-                                  text=self.card_title,
-                                  font=('Helvetica 50 bold'),
-                                  justify="right",
-                                  bg=card_bg_for_expl,
-                                  foreground=card_col_for_text,
-                                  wraplength=image_size[0] - 20
+            # make new image root
+            self.root = Image.new('RGB',
+                                  (card_size_width, card_size_depth),
+                                  color=main_bg_colour
                                   )
-            card_title.place(x=20, y=10)
 
-            # add main text
-            main_text = tk.Label(text_canvas,
-                                 text=card_text,
-                                 font=('Helvetica 50'),
-                                 justify="left",
-                                 bg=card_bg_for_expl,
-                                 foreground=card_col_for_text,
-                                 wraplength=image_size[0] - 20
-                                 )
-            main_text.place(x=20, y=120)
+            # paste image onto it
+            self.root.paste(img, (75, 75))
 
-            # bottom card type
-            bottom_card_type = tk.Label(text_canvas,
-                                         text=f">>>  {bottom_id_text}",
-                                         font=('Helvetica 35 bold'),
-                                         anchor="e",
-                                         bg=card_bg_for_expl,
-                                         foreground=card_col_for_text
-                                         )
-            bottom_card_type.place(x=20, y=380)
+            # masking triangle
+            triangle = ImageDraw.Draw(self.root)
+            triangle.polygon([(74, 74), (175, 74), (74, 175)], fill=main_bg_colour)
 
-            self.root.after(50, self.capture_screen_shot)
+            # credits
+            credits = ImageDraw.Draw(self.root)
+            font = ImageFont.truetype("Calibri.ttf", 15)
+            credits.text((85, image_size[1] + 50),
+                    f"{image_credit} ({images_cr})",
+                    fill=main_bg_colour,
+                    font=font
+                    )
 
-            self.root.update()
+            # symbol top left
+            sym_id = ImageDraw.Draw(self.root)
+            # sym_id.rectangle(((0, 00), (100, 100)), fill=main_bg_colour)
+            sym_font = ImageFont.truetype("Calibri.ttf", 200)
+            sym_id.text((30, -52),
+                           self.type_symbol,
+                           font=sym_font,
+                           fill="white",
+                           )
+
+            # Main text
+            main_text = ImageDraw.Draw(self.root)
+            main_text.rectangle(((75,
+                                  75 + image_size[1]),
+                                 (75 + image_size[0],
+                                  150 + (image_size[1] * 2)
+                                  )
+                                 ),
+                                fill=card_bg_for_expl
+                                )
+            title_font = ImageFont.truetype("Calibri Bold.ttf", 60)
+            main_text.text((95, 85 + image_size[1]),
+                           self.card_title,
+                           font=title_font,
+                           fill=card_col_for_text)
+
+            text_font = ImageFont.truetype("Calibri.ttf", 54)
+
+            # calc text wrapping
+            margin = 95
+            offset = 180 + image_size[1]
+            for line in textwrap.wrap(card_text, width=23):
+                main_text.text((margin, offset),
+                          line,
+                          font=text_font,
+                          fill=card_col_for_text
+                          )
+                offset += 65
+
+            bottom_font = ImageFont.truetype("Calibri Bold.ttf", 50)
+            main_text.text((95, 870),
+                           f">>>  {bottom_id_text}",
+                           font=bottom_font,
+                           fill=card_col_for_text)
+
+            # save to disk
+            safe_name = self.card_title.replace(" ", "_")
+            safe_name = safe_name.replace("/", "-")
+            print(f"saving {safe_name}")
+            self.root.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
+            # self.root.save("DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
 
     def close_window(self):
         self.root.destroy()
@@ -344,12 +336,12 @@ class PDF:
 
 
 if __name__ == "__main__":
-    # build = Card()
-    # build.create_full_deck()
+    build = Card()
+    build.create_full_deck()
     # build.close_window()
-
-    build_pdf = PDF()
-    build_pdf.pdf_build()
+    #
+    # build_pdf = PDF()
+    # build_pdf.pdf_build()
 
     # backs = Card()
     # backs.make_backs()
