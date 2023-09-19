@@ -206,58 +206,47 @@ class Card:
             self.root.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
             # self.root.save("DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
 
-    def close_window(self):
-        self.root.destroy()
+
+class Backs:
+    def __init__(self):
+        pass
 
     def make_backs(self):
-        self.root.configure(background="white")
-
-        # add DigiScore text
-        ds_name = tk.Label(self.root,
-                           text="The Digital Score",
-                           font=('Helvetica 50 bold'),
-                           bg="white",
-                           foreground="gray70"
-                           )
-        ds_name.place(x=160, y=20)
-
-        cards_name = tk.Label(self.root,
-                           text="Creativity Cards",
-                           font=('Helvetica 50 bold'),
-                           bg="white",
-                           foreground="gray70"
-                           )
-        cards_name.place(x=170, y=80)
-
-        ds_url = tk.Label(self.root,
-                           text="https://digiscore.github.io/",
-                           font=('Helvetica 50 bold'),
-                           bg="white",
-                           foreground="gray70"
-                           )
-        ds_url.place(x=70, y=750)
-
         for sym in symbols:
-            card_sym = tk.Label(self.root,
-                           text=sym,
-                           font=('Helvetica 400 bold'),
-                           bg="white",
-                           foreground="gray70"
+            self.root = Image.new('RGB',
+                                  (card_size_width, card_size_depth),
+                                  color="white"
+                                  )
+            back_text = ImageDraw.Draw(self.root)
+
+            back_text_font = ImageFont.truetype("Calibri Bold.ttf", 60)
+            back_text.text((160, 20),
+                           "The Digital Score",
+                           font=back_text_font,
+                           fill="lightgray"
                            )
-            card_sym.place(x=260, y=230)
+            back_text.text((170, 80),
+                           "Creativity Cards",
+                           font=back_text_font,
+                           fill="lightgray"
+                           )
 
-            img = ImageGrab.grab(bbox=(46, 55, (750 + 46), (997 + 55)),
-                                 include_layered_windows=False,
-                                 all_screens=True
-                                 )
-            img.save(f"cards/backs/DigiScore_{sym}_back_image.png")
+            url_font = ImageFont.truetype("Calibri Bold.ttf", 40)
+            back_text.text((150, 950),
+                           "https://digiscore.github.io/",
+                           font=url_font,
+                           fill="lightgray"
+                           )
 
-            sleep(0.05)
-            self.close_window()
+            big_symb_font = ImageFont.truetype("Calibri Bold.ttf", 600)
+            back_text.text((220, 130),
+                           sym,
+                           font=big_symb_font,
+                           fill="lightgray"
+                           )
 
+            self.root.save(f"cards/backs/DigiScore_{sym}_back_image.png")
 
-        # self.root.after(50, self.capture_screen_shot)
-        self.root.mainloop()
 
 class PDF:
     def __init__(self):
@@ -323,10 +312,9 @@ class PDF:
 if __name__ == "__main__":
     # build = Card()
     # build.create_full_deck()
-    # build.close_window()
     #
-    build_pdf = PDF()
-    build_pdf.pdf_build()
+    # build_pdf = PDF()
+    # build_pdf.pdf_build()
 
-    # backs = Card()
-    # backs.make_backs()
+    backs = Backs()
+    backs.make_backs()
