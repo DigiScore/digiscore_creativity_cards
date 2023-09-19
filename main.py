@@ -203,7 +203,9 @@ class Card:
             safe_name = self.card_title.replace(" ", "_")
             safe_name = safe_name.replace("/", "-")
             print(f"saving {safe_name}")
-            self.root.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
+            # self.root.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
+            self.root.save(f"cards/individual/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
+
             # self.root.save("DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
 
 
@@ -245,7 +247,7 @@ class Backs:
                            fill="lightgray"
                            )
 
-            self.root.save(f"cards/backs/DigiScore_{sym}_back_image.png")
+            self.root.save(f"cards/backs/{sym}.png")
 
 
 class PDF:
@@ -257,64 +259,100 @@ class PDF:
         return [full_card_list[i:i + 8] for i in range(0, len(full_card_list), 8)]
 
     def pdf_build(self):
-        # set pdf grid vars
-        c = 0  # column
-        r = 0  # row
+        # get the full list of paths for cards in this folder
+        path = glob(f"cards/individual/*")
 
-        # iterate through each symbol
+        # for cards in path:
+        # break that list into chunks of 8
+        list_of_card_list = self.process_list_of_cards(path)
 
-        for sym in symbols:
-            # get the full list of paths for cards in this folder
-            path = glob(f"cards/{sym}/*")
+        # go through each chunk of 8 and build a PDF sheet
+        for sheet, card_list in enumerate(list_of_card_list):
+            # set pdf grid vars
+            c = 0  # column
+            r = 0  # row
+            # print(sheet, card_list)
+            # make master A4 sheet
+            self.root = Image.new('RGB',
+                                  (master_page_width, master_page_height)
+                                  )
 
-            # break that list into chunks of 8
-            list_of_card_list = self.process_list_of_cards(path)
-            #
-            # list_of_image_objects = []
-            # list_of_empty_canvas = []
+            # resize each image and place on A4 sheet
+            for card in card_list:
+                print(card)
+                img = Image.open(card)
+                resized_img = img.resize(pdf_image_size)
 
-            # go through each chunk of 8 and build a PDF sheet
-            for sheet, card_list in enumerate(list_of_card_list):
-                # set pdf grid vars
-                c = 0  # column
-                r = 0  # row
-                print(sheet, card_list)
-                # make master A4 sheet
-                self.root = Image.new('RGB',
-                                      (master_page_width, master_page_height)
-                                      )
+                self.root.paste(resized_img,
+                                (c * pdf_card_size_w,
+                                 r * pdf_card_size_h)
+                                )
 
-                # resize each image and place on A4 sheet
-                for card in card_list:
-                    print(card)
-                    img = Image.open(card)
-                    resized_img = img.resize(pdf_image_size)
+                c += 1
+                if c >= master_page_columns:
+                    r += 1
+                    c = 0
 
-                    self.root.paste(resized_img,
-                                    (c * pdf_card_size_w,
-                                     r * pdf_card_size_h)
-                                    )
+                if r >= master_page_rows:
+                    break
 
-                    c += 1
-                    if c >= master_page_columns:
-                        r += 1
-                        c = 0
+            sym = card[27]
 
-                    if r >= master_page_rows:
-                        break
+            print(f"printing ----- cards/PDFs/DigiScore_sheet_{sheet}.pdf")
+            self.root.save(f"cards/PDFs/DigiScore_sheet_{sheet}.pdf")
 
-                print(f"printing ----- cards/PDFs/DigiScore_{sym}_sheet_{sheet}.pdf")
-                self.root.save(f"cards/PDFs/DigiScore_{sym}_sheet_{sheet}.pdf")
+    def back_pdf_build(self):
+        # get the full list of paths for cards in this folder
+        path = glob(f"cards/individual/*")
 
-        # self.root.mainloop()
+        # for cards in path:
+        # break that list into chunks of 8
+        list_of_card_list = self.process_list_of_cards(path)
+
+        # go through each chunk of 8 and build a PDF sheet
+        for sheet, card_list in enumerate(list_of_card_list):
+            # set pdf grid vars
+            c = 3  # column
+            r = 0  # row
+            # print(sheet, card_list)
+            # make master A4 sheet
+            self.root = Image.new('RGB',
+                                  (master_page_width, master_page_height)
+                                  )
+
+            # resize each image and place on A4 sheet
+            for card in card_list:
+                sym = card[27]
+                print(card, sym)
+
+                img = Image.open(f"cards/backs/{sym}.png")
+                resized_img = img.resize(pdf_image_size)
+
+                self.root.paste(resized_img,
+                                (c * pdf_card_size_w,
+                                 r * pdf_card_size_h)
+                                )
+
+                c -= 1
+                if c < 0:
+                    r += 1
+                    c = 3
+
+                if r >= master_page_rows:
+                    break
+
+            print(f"printing ----- cards/PDFs/DigiScore_BACK_sheet_{sheet}.pdf")
+            self.root.save(f"cards/PDFs/DigiScore_BACK_sheet_{sheet}.pdf")
 
 
 if __name__ == "__main__":
     # build = Card()
     # build.create_full_deck()
     #
-    # build_pdf = PDF()
+    build_pdf = PDF()
     # build_pdf.pdf_build()
+    build_pdf.back_pdf_build()
 
-    backs = Backs()
-    backs.make_backs()
+    #
+    # backs = Backs()
+    # backs.make_backs()

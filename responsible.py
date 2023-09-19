@@ -3,7 +3,7 @@ soci-technical pratices
 ethical stakes
 human values purposes and interests
 
-not just ding not-bad AI but good-StopAsyncIteration
+not just ding not-bad AI but good-
 
 no decision about us, without us
 
