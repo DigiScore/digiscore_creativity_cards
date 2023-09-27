@@ -197,17 +197,17 @@ class Card:
                                 fill=card_bg_for_expl,
                                 )
             # title
-            title_font = ImageFont.truetype("Calibri Bold.ttf", 94)
-            main_text.text((190 + crop_border,
+            title_font = ImageFont.truetype("Calibri Bold.ttf", 90)
+            main_text.text((185 + crop_border,
                             170 + image_size[1] + crop_border),
                            self.card_title,
                            font=title_font,
                            fill=card_col_for_text)
 
             # text
-            text_font = ImageFont.truetype("Calibri.ttf", 80)
+            text_font = ImageFont.truetype("Calibri.ttf", 75)
             # calc text wrapping
-            margin = 190 + crop_border
+            margin = 185 + crop_border
             offset = 360 + image_size[1] + crop_border
             for line in textwrap.wrap(card_text, width=24):
                 main_text.text((margin, offset),
@@ -221,17 +221,12 @@ class Card:
             bottom_font = ImageFont.truetype("Calibri Bold.ttf", 80)
             main_text.text((150 + crop_border,
                             1940 - crop_border),
-                           f"{self.type_symbol}  {bottom_id_text}",
+                           f"{self.type_symbol} {bottom_id_text}",
                            font=bottom_font,
                            fill=card_col_for_text)
 
             # crop marks
             crop_marks = ImageDraw.Draw(self.root)
-            # crop_marks.rectangle((crop_border, crop_border,
-            #                       card_size_width - crop_border, card_size_depth - crop_border),
-            #                      # dash = (5, 3),
-            #                      outline='black'
-            #                      )
 
             crop_line_offset = 40
             crop_width = 1
@@ -299,37 +294,39 @@ class Backs:
                                   )
             back_text = ImageDraw.Draw(self.root)
 
-            back_text_font = ImageFont.truetype("Calibri Bold.ttf", 50)
-            back_text.text((120 + crop_border,
-                            20 + crop_border),
+            back_text_font = ImageFont.truetype("Calibri Bold.ttf", 100)
+            back_text.text((240 + crop_border,
+                            40 + crop_border),
                            "The Digital Score",
                            font=back_text_font,
                            fill="lightgray"
                            )
-            back_text.text((130 + crop_border,
-                            80 + crop_border),
+            back_text.text((260 + crop_border,
+                            160 + crop_border),
                            "Creativity Cards",
                            font=back_text_font,
                            fill="lightgray"
                            )
 
-            url_font = ImageFont.truetype("Calibri Bold.ttf", 30)
-            back_text.text((120 + crop_border,
-                            950 - crop_border),
+            url_font = ImageFont.truetype("Calibri Bold.ttf", 60)
+            back_text.text((240 + crop_border,
+                            1900 - crop_border),
                            "https://digiscore.github.io/",
                            font=url_font,
                            fill="lightgray"
                            )
 
-            big_symb_font = ImageFont.truetype("Arial Bold.ttf", 500)
-            back_text.text((150 + crop_border,
-                            130 + crop_border),
+            big_symb_font = ImageFont.truetype("Arial Bold.ttf", 1000)
+            back_text.text((300 + crop_border,
+                            360 + crop_border),
                            sym,
                            font=big_symb_font,
                            fill="lightgray"
                            )
 
-            self.root.save(f"cards/backs/{sym}.png")
+            self.root.save(f"cards/backs/{sym}.png",
+                       dpi=(600, 600)
+                       )
 
 
 class PDF:
@@ -408,7 +405,6 @@ class PDF:
             # resize each image and place on A4 sheet
             for card in card_list:
                 sym = card[33]
-                print(card, sym)
 
                 img = Image.open(f"cards/backs/{sym}.png")
                 resized_img = img.resize(pdf_image_size)
@@ -426,21 +422,144 @@ class PDF:
                 if r >= master_page_rows:
                     break
 
-            save_path = f"cards/PDFs/backs/DigiScore_BACK_sheet_{sheet}_RESIZE_TO_A4.pdf"
+            save_path = f"cards/PDFs/backs/{self.language}/{self.language}_DigiScore_BACK_sheet_{sheet}_RESIZE_TO_A4.pdf"
             print(f"printing ----- {save_path}")
             self.root.save(save_path,
                            dpi=(300, 300)
                            )
 
+    def blank_cards(self):
+        # make new image root
+        blank_card_color = (192,192,192)
+        self.root = Image.new('RGB',
+                              (card_size_width, card_size_depth),
+                              color=blank_card_color
+                              )
+
+        # blank image box
+        image = ImageDraw.Draw(self.root)
+        image.rectangle(((150 + crop_border,
+                          150 + crop_border),
+                         (148 + image_size[0] + crop_border,
+                          300 + (image_size[1] * 2) + crop_border
+                          )
+                         ),
+                        fill="white",
+                        )
+
+        # masking triangle
+        triangle = ImageDraw.Draw(self.root)
+        triangle.polygon([(148 + crop_border, 148 + crop_border),
+                          (350 + crop_border, 148 + crop_border),
+                          (148 + crop_border, 350 + crop_border)
+                          ],
+                         fill=blank_card_color
+                         )
+
+        # Main text
+        main_text = ImageDraw.Draw(self.root)
+        main_text.rectangle(((150 + crop_border,
+                              150 + image_size[1] + crop_border),
+                             (148 + image_size[0] + crop_border,
+                              300 + (image_size[1] * 2) + crop_border
+                              )
+                             ),
+                            fill="white",
+                            )
+
+        # crop marks
+        crop_marks = ImageDraw.Draw(self.root)
+
+        crop_line_offset = 40
+        crop_width = 1
+        # top left (outside to inside)
+        crop_marks.line([(crop_border, 0),
+                         (crop_border, crop_border - crop_line_offset)],
+                        fill='black',
+                        width=crop_width)
+        crop_marks.line([(0, crop_border),
+                         (crop_border - crop_line_offset, crop_border)],
+                        fill='black',
+                        width=crop_width)
+
+        # top right
+        crop_marks.line([(card_size_width - crop_border, 0),
+                         (card_size_width - crop_border, crop_border - crop_line_offset)],
+                        fill='black',
+                        width=crop_width)
+        crop_marks.line([(card_size_width, crop_border),
+                         (card_size_width - crop_border + crop_line_offset, crop_border)],
+                        fill='black',
+                        width=crop_width)
+
+        # bottom left
+        crop_marks.line([(crop_border, card_size_depth),
+                         (crop_border, card_size_depth - crop_border + crop_line_offset)],
+                        fill='black',
+                        width=crop_width)
+        crop_marks.line([(0, card_size_depth - crop_border),
+                         (crop_border - crop_line_offset, card_size_depth - crop_border)],
+                        fill='black',
+                        width=crop_width)
+
+        # # bottom right
+        crop_marks.line([(card_size_width - crop_border, card_size_depth),
+                         (card_size_width - crop_border, card_size_depth - crop_border + crop_line_offset)],
+                        fill='black',
+                        width=crop_width)
+        crop_marks.line([(card_size_width, card_size_depth - crop_border),
+                         (card_size_width - crop_border + crop_line_offset, card_size_depth - crop_border)],
+                        fill='black',
+                        width=crop_width)
+
+        # save to disk
+        save_path = f"cards/individual/blank/DigiScore_blank.png"
+        print(f"saving {save_path}")
+        self.root.save(save_path,
+                       dpi=(600, 600)
+                       )
+        ###
+        # Build pdf sheet of blanks
+        ###
+        # make master A4 sheet
+        self.blanks = Image.new('RGB',
+                              (master_page_width, master_page_height)
+                              )
+        c = 0  # column
+        r = 0  # row
+        for n in range(8):
+            img = Image.open(save_path)
+            resized_img = img.resize(pdf_image_size)
+
+            self.blanks.paste(resized_img,
+                            (c * pdf_card_size_w,
+                             r * pdf_card_size_h)
+                            )
+
+            c += 1
+            if c >= master_page_columns:
+                r += 1
+                c = 0
+
+            if r >= master_page_rows:
+                break
+
+        save_path = f'cards/PDFs/blank/DigiScore_sheet_blanks_RESIZE_TO_A4.pdf'
+        print(f"printing ----- {save_path}")
+        self.blanks.save(save_path,
+                       dpi=(300, 300)
+                       )
 
 if __name__ == "__main__":
-    # build = Card('it')  # ('it')
+    card_language = 'it'  # 'en' 'it' 'de' 'fr'
+    # build = Card(card_language)
     # build.create_full_deck()
 
-    build_pdf = PDF('it')  # ('it')
-    build_pdf.pdf_build()
-    #
-    # build_pdf.back_pdf_build()
-    # #
+    build_pdf = PDF(card_language)
+    # build_pdf.pdf_build()
+    # build_pdf.blank_cards()
+
+    build_pdf.back_pdf_build()
+
     # backs = Backs()
     # backs.make_backs()
