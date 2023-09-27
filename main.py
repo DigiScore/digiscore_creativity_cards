@@ -10,7 +10,7 @@ from deep_translator import GoogleTranslator
 
 
 # Master A4 params
-master_page_width = 1580 # 3500
+master_page_width = 1580  # 3500
 master_page_height = 950  # 2480
 master_page_size = f"{master_page_width}x{master_page_height}"  # A4 LANDSCAPE in pixels
 master_page_columns = 4
@@ -190,11 +190,11 @@ class Card:
             main_text = ImageDraw.Draw(self.root)
             main_text.rectangle(((75 + crop_border,
                                   75 + image_size[1] + crop_border),
-                                 (75 + image_size[0] + crop_border,
+                                 (74 + image_size[0] + crop_border,
                                   150 + (image_size[1] * 2) + crop_border
                                   )
                                  ),
-                                fill=card_bg_for_expl
+                                fill=card_bg_for_expl,
                                 )
             # title
             title_font = ImageFont.truetype("Calibri Bold.ttf", 47)
@@ -209,7 +209,7 @@ class Card:
             # calc text wrapping
             margin = 95 + crop_border
             offset = 180 + image_size[1] + crop_border
-            for line in textwrap.wrap(card_text, width=25):
+            for line in textwrap.wrap(card_text, width=23):
                 main_text.text((margin, offset),
                                line,
                                font=text_font,
@@ -234,45 +234,46 @@ class Card:
             #                      )
 
             crop_line_offset = 20
+            crop_width = 1
             # top left (outside to inside)
             crop_marks.line([(crop_border, 0),
                             (crop_border, crop_border - crop_line_offset)],
                             fill='black',
-                            width=2)
+                            width=crop_width)
             crop_marks.line([(0, crop_border),
                              (crop_border - crop_line_offset, crop_border)],
                             fill='black',
-                            width=2)
+                            width=crop_width)
 
             # top right
             crop_marks.line([(card_size_width - crop_border, 0),
                              (card_size_width - crop_border, crop_border - crop_line_offset)],
                             fill='black',
-                            width=2)
+                            width=crop_width)
             crop_marks.line([(card_size_width, crop_border),
                              (card_size_width - crop_border + crop_line_offset, crop_border)],
                             fill='black',
-                            width=2)
+                            width=crop_width)
 
             # bottom left
             crop_marks.line([(crop_border, card_size_depth),
                              (crop_border, card_size_depth - crop_border + crop_line_offset)],
                             fill='black',
-                            width=2)
+                            width=crop_width)
             crop_marks.line([(0, card_size_depth - crop_border),
                              (crop_border - crop_line_offset, card_size_depth - crop_border)],
                             fill='black',
-                            width=2)
+                            width=crop_width)
 
             # # bottom right
             crop_marks.line([(card_size_width - crop_border, card_size_depth),
                              (card_size_width - crop_border, card_size_depth - crop_border + crop_line_offset)],
                             fill='black',
-                            width=2)
+                            width=crop_width)
             crop_marks.line([(card_size_width, card_size_depth - crop_border),
                              (card_size_width - crop_border + crop_line_offset, card_size_depth - crop_border)],
                             fill='black',
-                            width=2)
+                            width=crop_width)
 
             # save to disk
             safe_name = self.card_title.replace(" ", "_")
@@ -281,7 +282,7 @@ class Card:
             save_path = f"cards/individual/{self.language}/{self.language}_DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png"
             print(f"saving {save_path}")
             self.root.save(save_path,
-                           dpi=(300, 300)
+                           # dpi=(300, 300)
                            )
             # break
 
@@ -298,30 +299,30 @@ class Backs:
                                   )
             back_text = ImageDraw.Draw(self.root)
 
-            back_text_font = ImageFont.truetype("Calibri Bold.ttf", 60)
-            back_text.text((160 + crop_border,
+            back_text_font = ImageFont.truetype("Calibri Bold.ttf", 50)
+            back_text.text((120 + crop_border,
                             20 + crop_border),
                            "The Digital Score",
                            font=back_text_font,
                            fill="lightgray"
                            )
-            back_text.text((170 + crop_border,
+            back_text.text((130 + crop_border,
                             80 + crop_border),
                            "Creativity Cards",
                            font=back_text_font,
                            fill="lightgray"
                            )
 
-            url_font = ImageFont.truetype("Calibri Bold.ttf", 40)
-            back_text.text((150 + crop_border,
+            url_font = ImageFont.truetype("Calibri Bold.ttf", 30)
+            back_text.text((120 + crop_border,
                             950 - crop_border),
                            "https://digiscore.github.io/",
                            font=url_font,
                            fill="lightgray"
                            )
 
-            big_symb_font = ImageFont.truetype("Calibri Bold.ttf", 600)
-            back_text.text((220 + crop_border,
+            big_symb_font = ImageFont.truetype("Arial Bold.ttf", 500)
+            back_text.text((150 + crop_border,
                             130 + crop_border),
                            sym,
                            font=big_symb_font,
@@ -382,12 +383,12 @@ class PDF:
             save_path = f'cards/PDFs/{self.language}/{self.language}_DigiScore_sheet_{sheet}_RESIZE_TO_A4.pdf'
             print(f"printing ----- {save_path}")
             self.root.save(save_path,
-                           dpi=(300, 300)
+                           # dpi=(300, 300)
                            )
 
     def back_pdf_build(self):
         # get the full list of paths for cards in this folder
-        path = glob(f"cards/individual/*")
+        path = glob(f"cards/individual/{self.language}/*")
 
         # for cards in path:
         # break that list into chunks of 8
@@ -425,19 +426,20 @@ class PDF:
                 if r >= master_page_rows:
                     break
 
-            print(f"printing ----- cards/PDFs/DigiScore_BACK_sheet_{sheet}.pdf")
-            self.root.save(f"cards/PDFs/DigiScore_BACK_sheet_{sheet}_RESIZE_TO_A4.pdf",
-                           dpi=(300, 300)
+            save_path = f"cards/PDFs/{self.language}/DigiScore_BACK_sheet_{sheet}_RESIZE_TO_A4.pdf"
+            print(f"printing ----- {save_path}")
+            self.root.save(save_path,
+                           # dpi=(300, 300)
                            )
 
 
 if __name__ == "__main__":
     build = Card('it')  # ('it')
     build.create_full_deck()
-    #
-    # build_pdf = PDF('it')  # ('it')
-    # build_pdf.pdf_build()
-    # build_pdf.back_pdf_build()
-    #
+
+    build_pdf = PDF('it')  # ('it')
+    build_pdf.pdf_build()
+    build_pdf.back_pdf_build()
+    # #
     # backs = Backs()
     # backs.make_backs()
