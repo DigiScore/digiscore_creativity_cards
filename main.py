@@ -10,18 +10,18 @@ from deep_translator import GoogleTranslator
 
 
 # Master A4 params
-master_page_width = 1580  # 3500
-master_page_height = 950  # 2480
-master_page_size = f"{master_page_width}x{master_page_height}"  # A4 LANDSCAPE in pixels
+master_page_width = 3508  # 1580
+master_page_height = 2480  # 950
+master_page_size = f"{master_page_width}x{master_page_height}"  # A4 LANDSCAPE in pixels @ 300dpi
 master_page_columns = 4
 master_page_rows = 2
 
 # master card params
-card_size_width = 750
-card_size_depth = 1050
-crop_border = 75
-image_size = (600 - (crop_border * 2),
-              400 - crop_border
+card_size_width = 1500  # 750
+card_size_depth = 2100  # 1050
+crop_border = 150  # 75
+image_size = (1200 - (crop_border * 2),
+              800 - crop_border
               )
 
 pdf_card_size_w = int(master_page_width / master_page_columns)
@@ -74,15 +74,15 @@ class Card:
         # set up canvas for card
         self.language = language
 
-    def capture_screen_shot(self):
-        # capture screenshot of card
-        img = ImageGrab.grab(bbox=(46, 55, (750+46), (997+55)),
-                             include_layered_windows=False,
-                             all_screens=True
-                             )
-        safe_name = self.card_title.replace(" ", "_")
-        safe_name = safe_name.replace("/", "-")
-        img.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
+    # def capture_screen_shot(self):
+    #     # capture screenshot of card
+    #     img = ImageGrab.grab(bbox=(46, 55, (750+46), (997+55)),
+    #                          include_layered_windows=False,
+    #                          all_screens=True
+    #                          )
+    #     safe_name = self.card_title.replace(" ", "_")
+    #     safe_name = safe_name.replace("/", "-")
+    #     img.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
 
     def get_excel_data(self):
         full_card_df = pd.read_csv(filepath_or_buffer=excel_file,
@@ -150,24 +150,24 @@ class Card:
                                   )
 
             # paste image onto it
-            self.root.paste(img, (75 + crop_border,
-                                  75 + crop_border)
+            self.root.paste(img, (150 + crop_border,
+                                  150 + crop_border)
                             )
 
             # masking triangle
             triangle = ImageDraw.Draw(self.root)
-            triangle.polygon([(74 + crop_border, 74 + crop_border),
-                              (175 + crop_border, 74 + crop_border),
-                              (74 + crop_border, 175 + crop_border)
+            triangle.polygon([(148 + crop_border, 148 + crop_border),
+                              (350 + crop_border, 148 + crop_border),
+                              (148 + crop_border, 350 + crop_border)
                               ],
                              fill=main_bg_colour
                              )
 
             # credits
             credits = ImageDraw.Draw(self.root)
-            font = ImageFont.truetype("Calibri.ttf", 15)
-            credits.text((85 + crop_border,
-                          image_size[1] + 50 + crop_border
+            font = ImageFont.truetype("Calibri.ttf", 30)
+            credits.text((170 + crop_border,
+                          image_size[1] + 100 + crop_border
                           ),
                          f"{image_credit} ({images_cr})",
                          fill=main_bg_colour,
@@ -177,9 +177,9 @@ class Card:
             # symbol top left
             sym_id = ImageDraw.Draw(self.root)
             # sym_id.rectangle(((0, 00), (100, 100)), fill=main_bg_colour)
-            sym_font = ImageFont.truetype("Arial Bold.ttf", 150)
-            sym_id.text((30 + crop_border,
-                         -20 + crop_border
+            sym_font = ImageFont.truetype("Arial Bold.ttf", 300)
+            sym_id.text((60 + crop_border,
+                         -40 + crop_border
                          ),
                            self.type_symbol,
                            font=sym_font,
@@ -188,39 +188,39 @@ class Card:
 
             # Main text
             main_text = ImageDraw.Draw(self.root)
-            main_text.rectangle(((75 + crop_border,
-                                  75 + image_size[1] + crop_border),
-                                 (74 + image_size[0] + crop_border,
-                                  150 + (image_size[1] * 2) + crop_border
+            main_text.rectangle(((150 + crop_border,
+                                  150 + image_size[1] + crop_border),
+                                 (148 + image_size[0] + crop_border,
+                                  300 + (image_size[1] * 2) + crop_border
                                   )
                                  ),
                                 fill=card_bg_for_expl,
                                 )
             # title
-            title_font = ImageFont.truetype("Calibri Bold.ttf", 47)
-            main_text.text((95 + crop_border,
-                            85 + image_size[1] + crop_border),
+            title_font = ImageFont.truetype("Calibri Bold.ttf", 94)
+            main_text.text((190 + crop_border,
+                            170 + image_size[1] + crop_border),
                            self.card_title,
                            font=title_font,
                            fill=card_col_for_text)
 
             # text
-            text_font = ImageFont.truetype("Calibri.ttf", 40)
+            text_font = ImageFont.truetype("Calibri.ttf", 80)
             # calc text wrapping
-            margin = 95 + crop_border
-            offset = 180 + image_size[1] + crop_border
-            for line in textwrap.wrap(card_text, width=23):
+            margin = 190 + crop_border
+            offset = 360 + image_size[1] + crop_border
+            for line in textwrap.wrap(card_text, width=24):
                 main_text.text((margin, offset),
                                line,
                                font=text_font,
                                fill=card_col_for_text
                                )
-                offset += 55
+                offset += 110
 
             # bottom ID text
-            bottom_font = ImageFont.truetype("Calibri Bold.ttf", 40)
-            main_text.text((75 + crop_border,
-                            970 - crop_border),
+            bottom_font = ImageFont.truetype("Calibri Bold.ttf", 80)
+            main_text.text((150 + crop_border,
+                            1940 - crop_border),
                            f"{self.type_symbol}  {bottom_id_text}",
                            font=bottom_font,
                            fill=card_col_for_text)
@@ -233,7 +233,7 @@ class Card:
             #                      outline='black'
             #                      )
 
-            crop_line_offset = 20
+            crop_line_offset = 40
             crop_width = 1
             # top left (outside to inside)
             crop_marks.line([(crop_border, 0),
@@ -282,7 +282,7 @@ class Card:
             save_path = f"cards/individual/{self.language}/{self.language}_DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png"
             print(f"saving {save_path}")
             self.root.save(save_path,
-                           # dpi=(300, 300)
+                           dpi=(600, 600)
                            )
             # break
 
@@ -383,7 +383,7 @@ class PDF:
             save_path = f'cards/PDFs/{self.language}/{self.language}_DigiScore_sheet_{sheet}_RESIZE_TO_A4.pdf'
             print(f"printing ----- {save_path}")
             self.root.save(save_path,
-                           # dpi=(300, 300)
+                           dpi=(300, 300)
                            )
 
     def back_pdf_build(self):
@@ -426,20 +426,21 @@ class PDF:
                 if r >= master_page_rows:
                     break
 
-            save_path = f"cards/PDFs/{self.language}/DigiScore_BACK_sheet_{sheet}_RESIZE_TO_A4.pdf"
+            save_path = f"cards/PDFs/backs/DigiScore_BACK_sheet_{sheet}_RESIZE_TO_A4.pdf"
             print(f"printing ----- {save_path}")
             self.root.save(save_path,
-                           # dpi=(300, 300)
+                           dpi=(300, 300)
                            )
 
 
 if __name__ == "__main__":
-    build = Card('it')  # ('it')
-    build.create_full_deck()
+    # build = Card('it')  # ('it')
+    # build.create_full_deck()
 
     build_pdf = PDF('it')  # ('it')
     build_pdf.pdf_build()
-    build_pdf.back_pdf_build()
+    #
+    # build_pdf.back_pdf_build()
     # #
     # backs = Backs()
     # backs.make_backs()
