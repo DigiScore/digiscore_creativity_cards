@@ -6,6 +6,7 @@ from PIL import ImageTk, Image, ImageGrab, ImageDraw, ImageFont
 from time import sleep
 from glob import glob
 import textwrap
+from deep_translator import GoogleTranslator
 
 
 # Master A4 params
@@ -67,10 +68,10 @@ class WebImage:
 
 
 class Card:
-    def __init__(self):
+    def __init__(self,
+                 language: str = 'en'):
         # set up canvas for card
-        # self.root = Image.new('RGB', (pdf_card_size_w, pdf_card_size_h))
-        pass
+        self.language = language
 
     def capture_screen_shot(self):
         # capture screenshot of card
@@ -106,6 +107,9 @@ class Card:
             # general card params
             card_params_for_type = type_dict.get(this_card_details[1])
             card_type_name = card_params_for_type.get("name")
+            if self.language != "en":
+                card_type_name = GoogleTranslator(source='english',
+                                                  target=self.language).translate(card_type_name)
             card_bg_for_expl = card_params_for_type.get("bg_for_expl")
             card_col_for_text = card_params_for_type.get("text_col_for_explain")
 
@@ -117,7 +121,13 @@ class Card:
 
             # inner params
             self.card_title = this_card_details[3]
+            if self.language != "en":
+                self.card_title = GoogleTranslator(source='english',
+                                                  target=self.language).translate(self.card_title)
             card_text = this_card_details[4]
+            if self.language != "en":
+                card_text = GoogleTranslator(source='english',
+                                                  target=self.language).translate(card_text)
             image_credit = this_card_details[7]
             images_cr = this_card_details[5]
 
@@ -194,8 +204,8 @@ class Card:
                 offset += 65
 
             bottom_font = ImageFont.truetype("Calibri Bold.ttf", 50)
-            main_text.text((95, 870),
-                           f">>>  {bottom_id_text}",
+            main_text.text((75, 970),
+                           f"{self.type_symbol}  {bottom_id_text}",
                            font=bottom_font,
                            fill=card_col_for_text)
 
@@ -204,7 +214,10 @@ class Card:
             safe_name = safe_name.replace("/", "-")
             print(f"saving {safe_name}")
             # self.root.save(f"cards/{self.type_symbol}/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
-            self.root.save(f"cards/individual/DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
+            save_path = f"cards/individual/{self.language}/{self.language}_DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png"
+            self.root.save(save_path,
+                           dpi=(300, 300)
+                           )
 
             # self.root.save("DigiScore_{self.type_symbol}_{self.mode}_{safe_name}.png")
 
@@ -251,16 +264,18 @@ class Backs:
 
 
 class PDF:
-    def __init__(self):
+    def __init__(self,
+                 language: str = 'en'):
         # set up canvas for card
-        pass
+        self.language = language
+        self.path_to_cards = f"cards/individual/{language}/*"
 
     def process_list_of_cards(self, full_card_list):
         return [full_card_list[i:i + 8] for i in range(0, len(full_card_list), 8)]
 
     def pdf_build(self):
         # get the full list of paths for cards in this folder
-        path = glob(f"cards/individual/*")
+        path = glob(self.path_to_cards)
 
         # for cards in path:
         # break that list into chunks of 8
@@ -296,10 +311,13 @@ class PDF:
                 if r >= master_page_rows:
                     break
 
-            sym = card[27]
+            # sym = card[27]
 
-            print(f"printing ----- cards/PDFs/DigiScore_sheet_{sheet}.pdf")
-            self.root.save(f"cards/PDFs/DigiScore_sheet_{sheet}.pdf")
+            save_path = f'cards/PDFs/{self.language}/{self.language}_DigiScore_sheet_{sheet}.pdf''
+            print(f"printing ----- {save_path}")
+            self.root.save(save_path,
+                           dpi=(300, 300)
+                           )
 
     def back_pdf_build(self):
         # get the full list of paths for cards in this folder
@@ -342,16 +360,18 @@ class PDF:
                     break
 
             print(f"printing ----- cards/PDFs/DigiScore_BACK_sheet_{sheet}.pdf")
-            self.root.save(f"cards/PDFs/DigiScore_BACK_sheet_{sheet}.pdf")
+            self.root.save(f"cards/PDFs/DigiScore_BACK_sheet_{sheet}.pdf",
+                           dpi=(300, 300)
+                           )
 
 
 if __name__ == "__main__":
-    # build = Card()
+    # build = Card('it')
     # build.create_full_deck()
     #
-    build_pdf = PDF()
-    # build_pdf.pdf_build()
-    build_pdf.back_pdf_build()
+    build_pdf = PDF(f"cards/translations/*")
+    build_pdf.pdf_build()
+    # build_pdf.back_pdf_build()
 
     #
     # backs = Backs()
