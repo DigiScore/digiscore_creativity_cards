@@ -377,7 +377,7 @@ class PDF:
                 if r >= master_page_rows:
                     break
 
-            save_path = f'cards/PDFs/{self.language}/{self.language}_DigiScore_sheet_{sheet}_RESIZE_TO_A4.pdf'
+            save_path = f'cards/PDFs/{self.language}/front/{self.language}_DigiScore_sheet_{sheet}_RESIZE_TO_A4.pdf'
             print(f"printing ----- {save_path}")
             self.root.save(save_path,
                            dpi=(300, 300)
@@ -422,7 +422,7 @@ class PDF:
                 if r >= master_page_rows:
                     break
 
-            save_path = f"cards/PDFs/backs/{self.language}/{self.language}_DigiScore_BACK_sheet_{sheet}_RESIZE_TO_A4.pdf"
+            save_path = f"cards/PDFs/backs/{self.language}/back/{self.language}_DigiScore_BACK_sheet_{sheet}_RESIZE_TO_A4.pdf"
             print(f"printing ----- {save_path}")
             self.root.save(save_path,
                            dpi=(300, 300)
